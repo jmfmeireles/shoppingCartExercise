@@ -1,32 +1,18 @@
 package com.example.shoppingcartexercise;
 
-
-import static org.junit.Assert.assertEquals;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.util.List;
-
+import com.example.shoppingcartexercise.application.model.ShoppingCart;
+import com.example.shoppingcartexercise.application.repository.ShoppingCartRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import com.example.shoppingcartexercise.application.model.Product;
-import com.example.shoppingcartexercise.application.model.ShoppingCart;
-import com.example.shoppingcartexercise.application.repository.ShoppingCartRepo;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -40,9 +26,8 @@ public class ShoppingCartTest {
 	private ObjectMapper objectMapper;
 
 	@Autowired
-    private ShoppingCartRepo shoppingCartRepo;
-	    
-    
+    private ShoppingCartRepository shoppingCartRepo;
+
     @Test
     public void cannotCreateAShoppingCartWithoutProducts() throws Exception {
     	ShoppingCart shoppingCart = new ShoppingCart("", true, null);
@@ -71,7 +56,5 @@ public class ShoppingCartTest {
 //        //delete product
 //        productRepo.delete(product);
     }
-    
-    
-    
+
 }
