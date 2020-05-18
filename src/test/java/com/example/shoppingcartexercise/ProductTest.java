@@ -1,6 +1,5 @@
 package com.example.shoppingcartexercise;
 
-
 import static org.junit.Assert.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -21,11 +20,9 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import com.example.shoppingcartexercise.application.model.Product;
-import com.example.shoppingcartexercise.application.repository.ProductsRepo;
+import com.example.shoppingcartexercise.application.repository.ProductRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -39,9 +36,8 @@ public class ProductTest {
 	private ObjectMapper objectMapper;
 
 	@Autowired
-    private ProductsRepo productRepo;
-	    
-    
+    private ProductRepository productRepo;
+
     @Test
     public void canCreateAndGetAProduct() throws Exception {
     	Product product = new Product("dummyId", "Test Product Name", "Test Product Description", 2.0);
@@ -64,7 +60,6 @@ public class ProductTest {
         //delete product
         productRepo.delete(product);
     }
-    
     
     @Test
     public void canGetAllProducts() throws Exception {
@@ -93,11 +88,13 @@ public class ProductTest {
         productRepo.delete(product);
     	
     }
-    
+
+    // Private methods
     private void performProductPost(Product product) throws Exception {
     	mvc.perform(post("/products/create")
                 .contentType("application/json")
                 .content(objectMapper.writeValueAsString(product)))
                 .andExpect(status().isOk());
     }
+
 }

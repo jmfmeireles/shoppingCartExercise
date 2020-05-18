@@ -1,71 +1,89 @@
 package com.example.shoppingcartexercise.application.service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
+import com.example.shoppingcartexercise.application.model.Product;
+import com.example.shoppingcartexercise.application.model.ShoppingCart;
+import com.example.shoppingcartexercise.application.model.ShoppingCartItem;
+import com.example.shoppingcartexercise.application.repository.ProductRepository;
+import com.example.shoppingcartexercise.application.repository.ShoppingCartRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
-import com.example.shoppingcartexercise.application.model.ShoppingCart;
-import com.example.shoppingcartexercise.application.model.ShoppingCartItem;
-import com.example.shoppingcartexercise.application.repository.ProductsRepo;
-import com.example.shoppingcartexercise.application.repository.ShoppingCartRepo;
+import java.util.Comparator;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class ShoppingCartService {
 
-	@Autowired
-	private ShoppingCartRepo shoppingCartRepo;
-	
-	@Autowired
-	private ProductsRepo productRepo;
+    @Autowired
+    private ShoppingCartRepository shoppingCartRepository;
 
-	@Transactional
-	public void save(ShoppingCart shoppingCart) throws Exception {
-		Boolean thereAreInvalidQuantities = shoppingCart.getProducts().stream().anyMatch(item -> item.getQuantity() <= 0);
-		if (!thereAreInvalidQuantities) {
-			if (StringUtils.isEmpty(shoppingCart.getId())) {
-				shoppingCart.setId(UUID.randomUUID().toString());
-			}
-			shoppingCartRepo.save(shoppingCart);
-		} else {
-			throw new Exception("There are products with invalid quantities!");
-		}
-	}
+    @Autowired
+    private ProductRepository productRepository;
 
-	@Transactional
-	public List<ShoppingCart> getCurrentShoppingCart() {
-		List<ShoppingCart> listOfShoppingCarts = shoppingCartRepo.findAll().stream().filter(sc->sc.getIsActive().equals(Boolean.TRUE)).collect(Collectors.toList());
-		for (ShoppingCart shoppingCart : listOfShoppingCarts) {
-			//get all the products information
-			shoppingCart.setProducts(getProductsForShoppingCartSorted(shoppingCart));
-		}
-		return listOfShoppingCarts;
-	}
-	
-	private ArrayList<ShoppingCartItem> getProductsForShoppingCartSorted(ShoppingCart shoppingCart) {
-		ArrayList<ShoppingCartItem> productsOfShoppingCart = shoppingCart.getProducts();
-		//first, get the product information
-		for (ShoppingCartItem product : productsOfShoppingCart) {
-			product.setProduct(productRepo.findById(product.getProductId()).get());
-		}
-		//then, sort the products by name
-		Collections.sort(productsOfShoppingCart, new NameCompare());
-		return productsOfShoppingCart;
-	}
-}
+    public List<ShoppingCart> getAll() {
+        return shoppingCartRepository.findAll()
+                .stream()
+                .filter(shoppingCart -> !shoppingCart.isActive())
+                .map(shoppingCart -> {
+                    shoppingCart.setProducts(getShoppingCartItemsSortedByProductName(shoppingCart));
+                    return shoppingCart;
+                })
+                .collect(Collectors.toList());
+    }
 
-//Class to compare Movies by name 
-class NameCompare implements Comparator<ShoppingCartItem> 
-{ 
- public int compare(ShoppingCartItem shoppingCart1, ShoppingCartItem shoppingCart2) 
- { 
-     return shoppingCart1.getProduct().getName().compareTo(shoppingCart2.getProduct().getName()); 
- } 
+    @Transactional
+    public void insert(ShoppingCart shoppingCart) {
+        if (shoppingCart.getProducts().isEmpty()) {
+            throw new RuntimeException("Shopping cart is empty");
+        }
+
+        if (shoppingCart.getProducts().stream().anyMatch(item -> item.getQuantity() <= 0)) {
+            throw new RuntimeException("Shopping cart has one or more products with an invalid quantity");
+        }
+
+        shoppingCart.setId(UUID.randomUUID().toString());
+
+        shoppingCartRepository.save(shoppingCart);
+    }
+
+    @Transactional
+    public void update(String id, ShoppingCart shoppingCart) {
+        if (!shoppingCartRepository.existsById(id)) {
+            throw new NoSuchElementException("No shopping cart with id " + id);
+        }
+
+        if (shoppingCart.getProducts().isEmpty()) {
+            throw new RuntimeException("Shopping cart is empty");
+        }
+
+        if (shoppingCart.getProducts().stream().anyMatch(item -> item.getQuantity() <= 0)) {
+            throw new RuntimeException("Shopping cart has one or more products with an invalid quantity");
+        }
+
+        shoppingCartRepository.save(shoppingCart);
+    }
+
+    // Private methods
+    private List<ShoppingCartItem> getShoppingCartItemsSortedByProductName(ShoppingCart shoppingCart) {
+        // Compare shopping cart items by name
+        final Comparator<ShoppingCartItem> sortByName = Comparator.comparing((ShoppingCartItem item) -> item.getProduct().getName());
+
+        return shoppingCart.getProducts()
+                .stream()
+                .map(shoppingCartItem -> {
+                    final Product product = productRepository.findById(shoppingCartItem.getProductId())
+                            .orElseThrow(() -> new NoSuchElementException("No product with id " + shoppingCartItem.getProductId()));
+
+                    shoppingCartItem.setProduct(product);
+
+                    return shoppingCartItem;
+                })
+                .sorted(sortByName)
+                .collect(Collectors.toList());
+    }
+
 }
