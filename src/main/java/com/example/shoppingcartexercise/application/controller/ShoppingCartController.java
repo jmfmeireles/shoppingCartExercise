@@ -10,6 +10,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -38,7 +39,7 @@ public class ShoppingCartController {
 	@RequestMapping(value = "/createOrUpdate", method = RequestMethod.POST, produces=MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ShoppingCart> createNewShoppingCart(HttpSession httpSession, @RequestBody(required=true) ShoppingCart shoppingCart) throws Exception{
 		HttpHeaders httpHeaders = new HttpHeaders();
-		if (!shoppingCart.getProducts().isEmpty()) {
+		if (!CollectionUtils.isEmpty(shoppingCart.getProducts())) {
 			shoppingCartService.save(shoppingCart);
 		} else {
 			throw new Exception("This shopping cart does not have products!");

@@ -41,7 +41,7 @@ public class ShoppingCartService {
 
 	@Transactional
 	public List<ShoppingCart> getCurrentShoppingCart() {
-		List<ShoppingCart> listOfShoppingCarts =  shoppingCartRepo.findAll().stream().filter(sc->sc.getIsActive().equals(Boolean.FALSE)).collect(Collectors.toList());
+		List<ShoppingCart> listOfShoppingCarts = shoppingCartRepo.findAll().stream().filter(sc->sc.getIsActive().equals(Boolean.TRUE)).collect(Collectors.toList());
 		for (ShoppingCart shoppingCart : listOfShoppingCarts) {
 			//get all the products information
 			shoppingCart.setProducts(getProductsForShoppingCartSorted(shoppingCart));

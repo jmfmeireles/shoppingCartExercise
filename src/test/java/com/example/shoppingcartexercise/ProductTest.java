@@ -98,9 +98,6 @@ public class ProductTest {
     	mvc.perform(post("/products/create")
                 .contentType("application/json")
                 .content(objectMapper.writeValueAsString(product)))
-                .andExpect(status().isOk());mvc.perform(post("/products/create")
-                .contentType("application/json")
-                .content(objectMapper.writeValueAsString(product)))
                 .andExpect(status().isOk());
     }
 }
